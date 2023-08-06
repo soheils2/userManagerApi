@@ -44,7 +44,7 @@ export class DashCard {
 export let DashMask = {
   _id: 0,
   password: 0,
-  phone: 0,
+  // phone: 0,
   __v: 0,
 };
 
