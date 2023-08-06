@@ -13,9 +13,24 @@ const UserSchema = new mongoose.Schema({
 
 export const DB_User = mongoose.model("users", UserSchema);
 
+export class Register {
+  email: String;
+  password: String;
+  firstName: String;
+  lastName: String;
+  confirmPassword: String;
+  recaptcha: String;
+}
+
 export class credentialCard {
-  email: string;
-  password?: string;
+  _id?: String;
+  email?: String;
+  password?: String;
+}
+export class tokenCard {
+  id: String;
+  email: String;
+  isSuperUser?: String;
 }
 
 export class DashCard {
@@ -35,15 +50,15 @@ export let DashMask = {
 
 export class AuthInfo {
   isAuthenticated: boolean;
-  token: string;
+  token: String;
   expiration: number;
-  email: string;
-  role: string;
+  email: String;
+  role: String;
 }
 
 export class LoginRequest {
-  email: string;
-  password: string;
+  email: String;
+  password: String;
 }
 
 export class PageUsers {
@@ -53,46 +68,37 @@ export class PageUsers {
 
 export class LoginResponse {
   success: boolean;
-  token: string;
+  token: String;
   expiresInMinutes: number;
-  message: string;
-  email: string;
-  role: string;
+  message: String;
+  email: String;
+  role: String;
 }
 export class PasswordChange {
-  password: string;
-  confirmPassword: string;
-}
-
-export class Register {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  recaptcha: string;
+  password: String;
+  confirmPassword: String;
 }
 
 export class ResetPassword {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  code: string;
+  email: String;
+  password: String;
+  confirmPassword: String;
+  code: String;
 }
 
 export class Role {
-  name: string;
-  description: string;
+  name: String;
+  description: String;
 }
 
 export class User {
-  rowVersion: string;
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  role: string;
+  rowVersion: String;
+  id: String;
+  firstName: String;
+  lastName: String;
+  email: String;
+  password: String;
+  confirmPassword: String;
+  role: String;
   approved: boolean;
 }
