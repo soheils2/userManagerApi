@@ -1,0 +1,31 @@
+{
+  "name": "nodeapi",
+  "version": "1.0.0",
+  "description": "simple Api for auth userList",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "node dist/."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.0.1",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "@okta/jwt-verifier": "1.0.0",
+    "@types/node": "^20.4.6",
+    "bcryptjs": "^2.4.3",
+    "cors": "2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-bearer-token": "2.4.0",
+    "jsonwebtoken": "^9.0.1",
+    "mongoose": "5.6.7",
+    "sha1": "^1.1.1"
+  }
+}
