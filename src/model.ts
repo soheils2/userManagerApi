@@ -32,6 +32,10 @@ export class tokenCard {
   email: String;
   isSuperUser?: String;
 }
+export class vrTokenCard {
+  vr_id: String;
+  vr_email: String;
+}
 
 export class DashCard {
   email: String;
@@ -40,6 +44,12 @@ export class DashCard {
   phone: String;
   isEmailActive: boolean;
   isPhoneActive: boolean;
+}
+export class DashUpdateCard {
+  email?: String;
+  firstName?: String;
+  lastName?: String;
+  phone?: String;
 }
 export let DashMask = {
   _id: 0,
