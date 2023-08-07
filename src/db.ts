@@ -1,6 +1,12 @@
 import bcrypt from "bcryptjs";
-import { DB_User, DashMask, Register, credentialCard } from "./model.js";
-import { DashRequest } from "./consts.js";
+import {
+  DB_User,
+  DashMask,
+  DashUpdateCard,
+  Register,
+  credentialCard,
+} from "./model.js";
+import { DashRequest, DashUpRequest } from "./consts.js";
 
 export async function DB_getUser(user: credentialCard) {
   return await DB_User.findOne(user);
@@ -13,6 +19,25 @@ export async function DB_getDash(user: credentialCard) {
   // else
 
   return _dashboard?._doc ? _dashboard._doc : _dashboard;
+}
+
+export async function DB_updateDash(
+  user: credentialCard,
+  params: DashUpdateCard
+) {
+  const { _id } = user;
+  let updObj: DashUpdateCard = {};
+  for (let fieldName in params) {
+    if (params.hasOwnProperty(fieldName)) {
+      if (DashUpRequest.hasOwnProperty(fieldName)) {
+        updObj[fieldName] = params[fieldName];
+      }
+    }
+  }
+  // console.log("updating", updObj);
+  const _dashboard = await DB_User.updateOne({ _id }, updObj);
+  // console.log(_dashboard);
+  return _dashboard?.ok ? _dashboard.ok : false;
 }
 
 export async function DB_getUsersList() {
@@ -30,4 +55,11 @@ export async function DB_addUser(user: Register) {
     firstName: user.firstName,
     lastName: user.lastName,
   });
+}
+
+export async function DB_verfyEmail(user: credentialCard) {
+  const { _id } = user;
+  let updObj = { isEmailActive: true };
+  const _dashboard = await DB_User.updateOne({ _id }, updObj);
+  return _dashboard?.ok ? _dashboard.ok : false;
 }

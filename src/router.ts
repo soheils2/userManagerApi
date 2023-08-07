@@ -1,9 +1,25 @@
 import express from "express";
-import { DB_User, DashCard, LoginResponse, Register } from "./model.js";
+import {
+  DB_User,
+  DashCard,
+  DashUpdateCard,
+  LoginResponse,
+  Register,
+  tokenCard,
+  vrTokenCard,
+} from "./model.js";
 import * as dataModels from "./consts.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { DB_addUser, DB_getDash, DB_getUser, DB_getUsersList } from "./db.js";
+import {
+  DB_addUser,
+  DB_getDash,
+  DB_getUser,
+  DB_getUsersList,
+  DB_updateDash,
+  DB_verfyEmail,
+} from "./db.js";
+import { sendVerficationEmail } from "./SMTP.js";
 
 function createRouter() {
   const router = express.Router();
@@ -55,7 +71,18 @@ function createRouter() {
 
       // Create user in our database
       const user = await DB_addUser(_reqRegiter);
-      console.log("user created:", user);
+      // console.log("user created:", user);
+
+      const verifyToken = jwt.sign(
+        { vr_id: user._id, vr_email: user.email },
+        process.env.VR_TOKEN_KEY,
+        {
+          expiresIn: "10D",
+        }
+      );
+      let verfyLink = "http://localhost:4200/verfyEmail/" + verifyToken;
+      // let verfyLink = "http://localhost:8080/api/verify/" + verifyToken;
+      sendVerficationEmail(<string>_reqRegiter.email, verfyLink);
 
       // Create token
       const token = jwt.sign(
@@ -168,6 +195,31 @@ function createRouter() {
   });
 
   /*
+   * @method: <put>("/api/updatedash")
+   * @param: <Form><DashUpdateCard>{ email?: String, firstName?: String, lastName?: String, phone?:String}
+   * @header: <BearerToken>
+   * @returns: <DashCard>{  email: String, firstName: String, lastName: String, phone: String, isEmailActive: boolean, isPhoneActive: boolean,}
+   */
+  router.put("/api/updatedash", async (req, res) => {
+    const { id, email } = req?.["creds"];
+    // console.log("req?.[creds]", req?.["creds"]);
+    if (req?.["isSuperUser"] == "true") {
+      console.log("super user");
+    } else {
+      if (email == req.body.email) delete req.body.email;
+      let _inUse = false;
+      if (req.body.hasOwnProperty("email")) {
+        _inUse = await DB_getUser({ email: req.body.email });
+      }
+      if (_inUse != false) res.status(400).json({ inUse: true });
+      else {
+        const _isUpdated = await DB_updateDash({ _id: id }, req.body);
+        res.status(_isUpdated ? 200 : 400).json(_isUpdated);
+      }
+    }
+  });
+
+  /*
    * @method: <post>("/api/getusers")
    * @param:
    * @header: <BearerToken>
@@ -183,6 +235,68 @@ function createRouter() {
     }
   });
 
+  /*
+   * @method: <post>("/api/resendemail")
+   * @param:
+   * @header: <BearerToken>
+   * @returns: true|false
+   */
+  router.get("/api/resendemail", async (req, res) => {
+    if (req?.["isSuperUser"] == "true") {
+      res.status(200).json("true");
+    } else {
+      const { id, email } = req?.["creds"];
+
+      const verifyToken = jwt.sign(
+        { vr_id: id, vr_email: email },
+        process.env.VR_TOKEN_KEY,
+        {
+          expiresIn: "10D",
+        }
+      );
+      let verfyLink = "http://localhost:4200/verfyEmail/" + verifyToken;
+      // let verfyLink = "http://localhost:8080/api/verify/" + verifyToken;
+      sendVerficationEmail(email, verfyLink);
+      console.log("id,email", id, email);
+      res.status(200).json("OK");
+    }
+  });
+
+  /*
+   * @method: <post>("/api/verify/:verifyToken")
+   * @param:
+   * @header:
+   * @returns: res.status(_isUpdated ? 200 : 400).json(_isUpdated);
+   */
+  router.get("/api/verfyEmail/:verifyToken", async (req, res) => {
+    const token = req.params.verifyToken;
+    try {
+      const decoded = jwt.verify(token, process.env.VR_TOKEN_KEY);
+      const _obj = <vrTokenCard>decoded;
+      const vr_id = _obj.vr_id;
+      const vr_email = _obj.vr_email;
+      const isUserExist = await DB_getUser({ _id: vr_id });
+      if (!isUserExist || isUserExist.Blocked) {
+        return res
+          .status(400)
+          .json("User Blocked or Deleted (Suspended By Admin)");
+      } else if (isUserExist.isEmailActive) {
+        return res.status(409).json("Verfied Before");
+      } else {
+        const _isVerfied = await DB_verfyEmail({ _id: vr_id });
+
+        res
+          .status(_isVerfied ? 200 : 500)
+          .json(_isVerfied ? "Email Verfied" : "something Bad haappnd!");
+      }
+    } catch (err) {
+      console.log("err", err);
+      return res.status(401).json("Invalid Token");
+    }
+    // console.log("token:", token);
+    // console.log("vr_id:", vr_id);
+    // console.log("vr_email:", vr_email);
+  });
   return router;
 }
 

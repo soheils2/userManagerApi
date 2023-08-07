@@ -1,4 +1,4 @@
-import { DashCard, LoginResponse, Register } from "./model.js";
+import { DashCard, DashUpdateCard, LoginResponse, Register } from "./model.js";
 
 export const LoginSuccesUser: LoginResponse = {
   token: "",
@@ -33,4 +33,10 @@ export const DashRequest: DashCard = {
   phone: null,
   isEmailActive: false,
   isPhoneActive: false,
+};
+export const DashUpRequest: DashUpdateCard = {
+  email: null,
+  firstName: null,
+  lastName: null,
+  phone: null,
 };

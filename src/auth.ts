@@ -27,6 +27,8 @@ async function verifyToken(req, res, next) {
       };
 
       return next();
+    } else if (req.url.includes("/verfyEmail/")) {
+      return next(); //! check if not being an safty Issue
     }
     const token = req.token;
 
