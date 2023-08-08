@@ -37,12 +37,12 @@ function createRouter() {
     try {
       if (
         !(
-          req.body.firstName &&
-          req.body.lastName &&
-          req.body.email &&
-          req.body.password &&
-          req.body.confirmPassword &&
-          req.body.recaptcha
+          req.body.hasOwnProperty("firstName") &&
+          req.body.hasOwnProperty("lastName") &&
+          req.body.hasOwnProperty("email") &&
+          req.body.hasOwnProperty("password") &&
+          req.body.hasOwnProperty("confirmPassword") &&
+          req.body.hasOwnProperty("recaptcha")
         )
       ) {
         res.status(401).json("All input is required");
