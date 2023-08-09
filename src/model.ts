@@ -38,6 +38,7 @@ export class vrTokenCard {
 }
 
 export class DashCard {
+  id?: string;
   email: String;
   firstName: String;
   lastName: String;
@@ -51,8 +52,14 @@ export class DashUpdateCard {
   lastName?: String;
   phone?: String;
 }
-export let DashMask = {
+export const DashMask = {
   _id: 0,
+  password: 0,
+  // phone: 0,
+  __v: 0,
+};
+export const userListMask = {
+  // _id: 0,
   password: 0,
   // phone: 0,
   __v: 0,
@@ -73,7 +80,7 @@ export class LoginRequest {
 
 export class PageUsers {
   totalUsers: number;
-  users: User[];
+  users: DashCard[];
 }
 
 export class LoginResponse {

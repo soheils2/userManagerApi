@@ -4,6 +4,7 @@ import {
   DashCard,
   DashUpdateCard,
   LoginResponse,
+  PageUsers,
   Register,
   tokenCard,
   vrTokenCard,
@@ -52,7 +53,7 @@ function createRouter() {
         ...dataModels.RegisterRequest, //* preSet data in case of undefined pointers
         firstName: req.body.firstName.trim(),
         lastName: req.body.lastName.trim(),
-        email: req.body.email.trim(),
+        email: req.body.email.trim().toLowerCase(),
         password: req.body.password.trim(),
         confirmPassword: req.body.confirmPassword.trim(),
         recaptcha: req.body.recaptcha,
@@ -119,7 +120,7 @@ function createRouter() {
       // Validate if user exist in our database
       if (req?.["isSuperUser"] == "true") {
         if (
-          process.env.ADMIN_USER == email &&
+          process.env.ADMIN_USER.toLowerCase() == email &&
           process.env.ADMIN_PASS == password
         ) {
           const token = jwt.sign(
@@ -202,18 +203,33 @@ function createRouter() {
    */
   router.put("/api/updatedash", async (req, res) => {
     const { id, email } = req?.["creds"];
-    // console.log("req?.[creds]", req?.["creds"]);
+
     if (req?.["isSuperUser"] == "true") {
       console.log("super user");
+      //TODO update params for super user
     } else {
-      if (email == req.body.email) delete req.body.email;
-      let _inUse = false;
-      if (req.body.hasOwnProperty("email")) {
-        _inUse = await DB_getUser({ email: req.body.email });
+      // console.log("email", email);
+      // console.log("req.body", req.body);
+
+      let hsEmailChanged = false;
+      if (email.toLowerCase() != req.body.email.toLowerCase()) {
+        //? email has changed!
+        hsEmailChanged = true;
       }
-      if (_inUse != false) res.status(400).json({ inUse: true });
+      let _inUse = false;
+      console.log("hsEmailChanged", hsEmailChanged);
+
+      if (hsEmailChanged && req.body.hasOwnProperty("email")) {
+        _inUse = await DB_getUser({ email: req.body.email.toLowerCase() });
+      }
+
+      if (_inUse) res.status(400).json({ inUse: true });
       else {
-        const _isUpdated = await DB_updateDash({ _id: id }, req.body);
+        const _isUpdated = await DB_updateDash(
+          { _id: id },
+          req.body,
+          hsEmailChanged
+        );
         res.status(_isUpdated ? 200 : 400).json(_isUpdated);
       }
     }
@@ -228,8 +244,12 @@ function createRouter() {
    */
   router.get("/api/getusers", async (req, res) => {
     if (req?.["isSuperUser"] == "true") {
-      const usersList = await DB_getUsersList();
-      res.status(200).json(usersList);
+      const usersList: DashCard[] = await DB_getUsersList();
+      const rsp: PageUsers = {
+        totalUsers: usersList.length,
+        users: usersList,
+      };
+      res.status(200).json(rsp);
     } else {
       res.status(400).json("not SuperUser!");
     }

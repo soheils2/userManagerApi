@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import {
   DB_User,
@@ -5,8 +6,10 @@ import {
   DashUpdateCard,
   Register,
   credentialCard,
+  userListMask,
 } from "./model.js";
 import { DashRequest, DashUpRequest } from "./consts.js";
+import { sendVerficationEmail } from "./SMTP.js";
 
 export async function DB_getUser(user: credentialCard) {
   return await DB_User.findOne(user);
@@ -23,17 +26,35 @@ export async function DB_getDash(user: credentialCard) {
 
 export async function DB_updateDash(
   user: credentialCard,
-  params: DashUpdateCard
+  params: DashUpdateCard,
+  emailChanged: boolean
 ) {
   const { _id } = user;
-  let updObj: DashUpdateCard = {};
+  let updObj = {};
   for (let fieldName in params) {
     if (params.hasOwnProperty(fieldName)) {
       if (DashUpRequest.hasOwnProperty(fieldName)) {
-        updObj[fieldName] = params[fieldName];
+        updObj[fieldName] =
+          fieldName == "email"
+            ? params[fieldName].toLowerCase()
+            : params[fieldName];
       }
     }
   }
+  if (emailChanged) {
+    updObj["isEmailActive"] = false;
+    const verifyToken = jwt.sign(
+      { vr_id: user._id, vr_email: user.email },
+      process.env.VR_TOKEN_KEY,
+      {
+        expiresIn: "10D",
+      }
+    );
+    let verfyLink = "http://localhost:4200/verfyEmail/" + verifyToken;
+    // let verfyLink = "http://localhost:8080/api/verify/" + verifyToken;
+    sendVerficationEmail(<string>updObj["email"], verfyLink);
+  }
+  // updObj.email = updObj.email.toLowerCase();
   // console.log("updating", updObj);
   const _dashboard = await DB_User.updateOne({ _id }, updObj);
   // console.log(_dashboard);
@@ -41,7 +62,7 @@ export async function DB_updateDash(
 }
 
 export async function DB_getUsersList() {
-  const _usersList = await DB_User.find({}, DashMask);
+  const _usersList = await DB_User.find({}, userListMask);
   return _usersList;
 }
 

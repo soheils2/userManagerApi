@@ -8,19 +8,23 @@ async function verifyToken(req, res, next) {
   try {
     // console.log("url", req.url);
     // console.log("body", req.body);
+
     // console.log("token:", req.headers.authorization);
 
     if (req.url == "/api/register" || req.url == "/api/login") {
-      const { email, password, isSuperUser } = req.body;
+      let { email, password, isSuperUser } = req.body;
+      email = email.toLowerCase();
 
       let pattern =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       let ismailValid = pattern.test(email);
       let isPassValid = password?.length > 3;
       if (!(ismailValid && isPassValid)) {
-        return res.status(401).json("invalid inputs1");
+        return res.status(401).json("invalid inputs");
       }
-      req.isSuperUser = isSuperUser;
+
+      // console.log("isSuperUser", isSuperUser);
+      req.isSuperUser = isSuperUser ? "true" : "fasle";
       req.creds = {
         email,
         password,
