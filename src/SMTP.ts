@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 
 export function sendVerficationEmail(to: string, code: string) {
+  console.log("activation Url is", code);
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
